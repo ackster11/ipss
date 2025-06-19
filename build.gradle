@@ -1,102 +1,110 @@
 plugins {
-    id 'fabric-loom' version '1.10.4'
-    id 'maven-publish'
-    id 'org.jetbrains.kotlin.jvm'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.0'
+	id 'fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+	id 'org.jetbrains.kotlin.jvm'
+	id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.0'
 }
 
 version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = project.archives_base_name
+	archivesName = project.archives_base_name
 }
 
 repositories {
-    mavenCentral()
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
+	mavenCentral()
+	maven { url = "https://maven.fabricmc.net/" }
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"ip_security_suite" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
 }
 
 configurations {
-    extraLibs
+	extraLibs
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0"
-    implementation "io.ktor:ktor-client-okhttp:2.3.12"
-    implementation "io.ktor:ktor-client-core:2.3.12"
-    implementation "io.ktor:ktor-client-cio-jvm:2.3.12"
+	implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0"
+	implementation "io.ktor:ktor-client-okhttp:2.3.12"
+	implementation "io.ktor:ktor-client-core:2.3.12"
+	implementation "io.ktor:ktor-client-cio-jvm:2.3.12"
 
-    extraLibs "io.ktor:ktor-client-core:2.3.12"
-    extraLibs "io.ktor:ktor-client-okhttp:2.3.12"
-    extraLibs "io.ktor:ktor-client-cio-jvm:2.3.12"
+	extraLibs "io.ktor:ktor-client-core:2.3.12"
+	extraLibs "io.ktor:ktor-client-okhttp:2.3.12"
+	extraLibs "io.ktor:ktor-client-cio-jvm:2.3.12"
 
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation("net.fabricmc:fabric-language-kotlin:1.11.0+kotlin.2.0.0")
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// Fabric Language Kotlin for 1.21.6 (latest available version)
+	modImplementation("net.fabricmc:fabric-language-kotlin:1.11.0+kotlin.2.0.0")
 }
 
 processResources {
-    inputs.property "version", project.version
-    inputs.property "minecraft_version", project.minecraft_version
-    inputs.property "loader_version", project.loader_version
-    filteringCharset "UTF-8"
+	inputs.property "version", project.version
+	inputs.property "minecraft_version", project.minecraft_version
+	inputs.property "loader_version", project.loader_version
+	filteringCharset "UTF-8"
 
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version,
-                "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version
-    }
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version,
+			"minecraft_version": project.minecraft_version,
+			"loader_version": project.loader_version
+	}
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-    withSourcesJar()
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-    it.options.release.set(21)
+	it.options.encoding = "UTF-8"
+	it.options.release = 21
 }
 
 kotlin {
-    jvmToolchain(21)
+	jvmToolchain(21)
 }
 
 jar {
-    manifest {
-        attributes.put("Main-Class", "thediamondcg.ipsecuritysuite.IPSecuritySuite")
-    }
+	inputs.property "archivesName", project.base.archivesName
 
-    from {
-        duplicatesStrategy DuplicatesStrategy.EXCLUDE
-        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+	from {
+		duplicatesStrategy DuplicatesStrategy.EXCLUDE
+		configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+	}
 
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}"}
-    }
+	from("LICENSE") {
+		rename { "${it}_${inputs.properties.archivesName}"}
+	}
 }
 
+// configure the maven publication
 publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
-            from components.java
-        }
-    }
-    repositories {
-        // Add repositories to publish to here.
-    }
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
+	}
+
+	repositories {
+		// Add repositories to publish to here.
+	}
 }
