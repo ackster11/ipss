@@ -192,7 +192,7 @@ class IPSecuritySuite : ModInitializer {
         // When an operator does the command with @a, it can select several profiles.
         val selectedProfiles = GameProfileArgumentType.getProfileArgument(ctx, "player_name")
 
-        for (playerProfile: GameProfile in selectedProfiles) {
+        for (playerProfile in GameProfileArgumentType.getProfileArgument(ctx, "player_name").mapNotNull { it as? com.mojang.authlib.GameProfile }) {
             val playerUuid = playerProfile.id
 
             val playerIp = ctx.source.server.playerManager.getPlayer(playerUuid)?.ip
@@ -219,7 +219,7 @@ class IPSecuritySuite : ModInitializer {
         // When an operator does the command with @a, it can select several profiles.
         val selectedProfiles = GameProfileArgumentType.getProfileArgument(ctx, "player_name")
 
-        for (playerProfile: GameProfile in selectedProfiles) {
+        for (playerProfile in GameProfileArgumentType.getProfileArgument(ctx, "player_name").mapNotNull { it as? com.mojang.authlib.GameProfile }) {
             val playerUuid = playerProfile.id
 
             if (ipData.eraseIPs(playerUuid)) {
