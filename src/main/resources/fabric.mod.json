@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "ip-security-suite",
+  "version": "${version}",
+  "name": "IP Security Suite",
+  "description": "Protect against VPN/Proxy users, and lock the IPs of operators so they can only log in from set IPs.",
+  "authors": [
+    "T-O-R-U-S"
+  ],
+  "contact": {
+    "repo": "https://github.com/ackster11/ipss"
+  },
+  "license": "GPL-3.0",
+  "icon": "assets/ip-security-suite/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "thediamondcg.ipsecuritysuite.IPSecuritySuite"
+      }
+    ]
+  },
+  "accessWidener": "ipss.accesswidener",
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}",
+    "fabric-language-kotlin": ">=1.13.10+kotlin.2.3.20"
+  }
+}
